@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Engine Switcher — Bookmarklets</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface-hover: #242836;
+      --border: #2e3345;
+      --text: #e4e6f0;
+      --text-dim: #8a8fa8;
+      --accent: #6c7aee;
+      --accent-glow: rgba(108, 122, 238, 0.25);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #6c7aee, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* --- How-to banner --- */
+    .how-to {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .how-to h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .how-to ol {
+      padding-left: 1.25rem;
+      color: var(--text-dim);
+    }
+
+    .how-to ol li { margin-bottom: 0.35rem; }
+    .how-to ol li strong { color: var(--text); }
+
+    /* --- Section --- */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* --- Card grid --- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .card .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .card .hint { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1rem; flex: 1; }
+
+    .bookmarklet-link {
+      display: inline-block;
+      padding: 0.55rem 1.4rem;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      cursor: grab;
+      transition: background 0.2s, transform 0.1s;
+      user-select: none;
+    }
+
+    .bookmarklet-link:active { cursor: grabbing; transform: scale(0.96); }
+    .bookmarklet-link:hover { background: #5a69dc; }
+
+    /* --- Chooser section --- */
+    .chooser-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .chooser-section h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .chooser-section p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .chooser-section .bookmarklet-link { font-size: 0.95rem; padding: 0.65rem 2rem; }
+
+    /* --- Code preview --- */
+    .code-section { margin-bottom: 3rem; }
+
+    .code-block-wrapper {
+      position: relative;
+      background: #13151e;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-top: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .code-block-wrapper pre {
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #c5cadb;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .label {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      background: var(--surface-hover);
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+    }
+
+    /* icon backgrounds */
+    .icon-google   { background: rgba(234, 67, 53, 0.15); color: #ea4335; }
+    .icon-ddg      { background: rgba(222, 88, 51, 0.15); color: #de5833; }
+    .icon-bing     { background: rgba(0, 120, 212, 0.15); color: #0078d4; }
+    .icon-brave    { background: rgba(251, 84, 43, 0.15); color: #fb542b; }
+    .icon-yahoo    { background: rgba(111, 22, 217, 0.15); color: #6f16d9; }
+    .icon-perplexity { background: rgba(32, 195, 176, 0.15); color: #20c3b0; }
+    .icon-chooser  { background: var(--accent-glow); color: var(--accent); }
+
+    footer {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Search Engine Switcher</h1>
+      <p>Drag any button below to your bookmarks bar. When a search result disappoints you, click the bookmarklet to instantly re-search on another engine.</p>
+    </header>
+
+    <div class="how-to">
+      <h2>How to install</h2>
+      <ol>
+        <li>Make sure your <strong>bookmarks bar is visible</strong> (Ctrl+Shift+B / Cmd+Shift+B).</li>
+        <li><strong>Drag</strong> any purple button below onto your bookmarks bar.</li>
+        <li>That's it — go to any search results page and <strong>click the bookmark</strong> to switch engines.</li>
+      </ol>
+    </div>
+
+    <h2 class="section-title">Individual Switchers</h2>
+    <div class="grid" id="card-grid"></div>
+
+    <div class="chooser-section">
+      <div class="icon icon-chooser" style="width:56px;height:56px;font-size:1.6rem;margin:0 auto 1rem;border-radius:50%;display:flex;align-items:center;justify-content:center;">⚡</div>
+      <h3>All-in-One Chooser</h3>
+      <p>One bookmarklet to rule them all — click it and pick the engine from a popup.</p>
+      <a class="bookmarklet-link" id="chooser-link" href="#">⚡ Switch Search</a>
+    </div>
+
+    <div class="code-section">
+      <h2 class="section-title">Source Code</h2>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:1rem;">Want to see how they work? Here's the readable code behind each bookmarklet.</p>
+      <div id="code-blocks"></div>
+    </div>
+
+    <footer>Search Engine Switcher Bookmarklets &mdash; works on any Chromium or Firefox browser.</footer>
+  </div>
+
+  <script>
+    const engines = [
+      {
+        name: 'Google',
+        icon: '🔍',
+        iconClass: 'icon-google',
+        hint: 'Re-search your query on Google',
+        url: 'https://www.google.com/search?q=',
+      },
+      {
+        name: 'DuckDuckGo',
+        icon: '🦆',
+        iconClass: 'icon-ddg',
+        hint: 'Private search with DuckDuckGo',
+        url: 'https://duckduckgo.com/?q=',
+      },
+      {
+        name: 'Bing',
+        icon: '🅱️',
+        iconClass: 'icon-bing',
+        hint: 'Try Microsoft Bing results',
+        url: 'https://www.bing.com/search?q=',
+      },
+      {
+        name: 'Brave',
+        icon: '🦁',
+        iconClass: 'icon-brave',
+        hint: 'Independent results from Brave',
+        url: 'https://search.brave.com/search?q=',
+      },
+      {
+        name: 'Yahoo',
+        icon: '🟣',
+        iconClass: 'icon-yahoo',
+        hint: 'Search again on Yahoo',
+        url: 'https://search.yahoo.com/search?p=',
+      },
+      {
+        name: 'Perplexity',
+        icon: '✨',
+        iconClass: 'icon-perplexity',
+        hint: 'AI-powered answers from Perplexity',
+        url: 'https://www.perplexity.ai/search?q=',
+      },
+    ];
+
+    function extractQueryCode() {
+      return `var p=new URLSearchParams(window.location.search);`
+           + `var q=p.get('q')||p.get('p')||p.get('query')||p.get('search_query')||document.getSelection().toString().trim();`;
+    }
+
+    function buildBookmarklet(targetUrl) {
+      return `javascript:void(function(){${extractQueryCode()}if(q){window.location='${targetUrl}'+encodeURIComponent(q)}else{alert('No search query found.\\nTip: select text on any page, then click this bookmarklet.')}})()`;
+    }
+
+    function buildChooser() {
+      const entries = engines.map((e, i) => `'${i + 1}':'${e.url}'`).join(',');
+      const menuLines = engines.map((e, i) => `${i + 1}) ${e.name}`).join('\\n');
+      return `javascript:void(function(){${extractQueryCode()}if(!q){alert('No search query found.\\nTip: select text on any page, then click this bookmarklet.');return}var c=prompt('Switch search engine:\\n${menuLines}');var u={${entries}};if(u[c]){window.location=u[c]+encodeURIComponent(q)}})()`;
+    }
+
+    function readableCode(engine) {
+      return `// Search on ${engine.name}\nvar params = new URLSearchParams(window.location.search);\nvar query = params.get('q')\n        || params.get('p')\n        || params.get('query')\n        || params.get('search_query')\n        || document.getSelection().toString().trim();\n\nif (query) {\n  window.location = '${engine.url}' + encodeURIComponent(query);\n} else {\n  alert('No search query found.');\n}`;
+    }
+
+    function readableChooser() {
+      const menuStr = engines.map((e, i) => `  ${i + 1}) ${e.name}`).join('\n');
+      const mapStr = engines.map((e, i) => `  '${i + 1}': '${e.url}'`).join(',\n');
+      return `// All-in-One Search Switcher\nvar params = new URLSearchParams(window.location.search);\nvar query = params.get('q')\n        || params.get('p')\n        || params.get('query')\n        || params.get('search_query')\n        || document.getSelection().toString().trim();\n\nif (!query) { alert('No search query found.'); return; }\n\nvar choice = prompt('Switch search engine:\\n${menuStr}');\n\nvar urls = {\n${mapStr}\n};\n\nif (urls[choice]) {\n  window.location = urls[choice] + encodeURIComponent(query);\n}`;
+    }
+
+    // Render cards
+    const grid = document.getElementById('card-grid');
+    engines.forEach(engine => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="icon ${engine.iconClass}">${engine.icon}</div>
+        <h3>${engine.name}</h3>
+        <p class="hint">${engine.hint}</p>
+        <a class="bookmarklet-link" href="${buildBookmarklet(engine.url)}" title="Drag me to your bookmarks bar!">↗ ${engine.name}</a>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Chooser link
+    document.getElementById('chooser-link').href = buildChooser();
+
+    // Code blocks
+    const codeContainer = document.getElementById('code-blocks');
+    engines.forEach(engine => {
+      codeContainer.innerHTML += codeBlockHTML(engine.name, readableCode(engine));
+    });
+    codeContainer.innerHTML += codeBlockHTML('All-in-One Chooser', readableChooser());
+
+    function codeBlockHTML(label, code) {
+      const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<span class="label">${label}</span>
+        <div class="code-block-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>${escaped}</code></pre>
+        </div>`;
+    }
+
+    function copyCode(btn) {
+      const code = btn.nextElementSibling.textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    }
+  </script>
+</body>
+</html>
